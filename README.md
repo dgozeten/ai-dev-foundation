@@ -22,10 +22,26 @@ This repository provides the shared scaffolding and configuration layer for AI-a
 foundation/
 ├── foundation.config.json   # Central configuration & feature flags
 ├── rules/                   # Shared rule definitions
-├── scripts/                 # Automation & bootstrap scripts
-├── templates/               # Decision gate & workflow templates
+├── scripts/
+│   └── init.sh              # One-command bootstrap script
+├── templates/
+│   ├── dev-memory-backend/  # Dev Memory schema + API contract
+│   ├── state-protocol/      # State Protocol primitives + patterns
+│   └── full-bootstrap/      # Opt-in database migrations
 └── patches/                 # Incremental patches for upgrades
 ```
+
+## Database Bootstrap (Opt-in)
+
+By default, `init.sh` does **not** touch your database.
+
+| Command | Effect |
+|---|---|
+| `init.sh` | Rules + docs only. No DB changes. |
+| `init.sh --with-db` | Also copies migration files. Does NOT execute them. |
+| `init.sh --with-db --run` | Copies + executes migrations. Requires `$DATABASE_URL` and explicit confirmation. |
+
+**Why opt-in?** Running SQL is irreversible. The Decision Gate principle applies — no mutation without explicit consent.
 
 ## License
 

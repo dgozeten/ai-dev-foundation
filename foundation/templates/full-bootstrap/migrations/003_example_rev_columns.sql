@@ -1,0 +1,43 @@
+-- =============================================================================
+-- 003_example_rev_columns.sql
+-- REFERENCE ONLY — Example rev-based column patterns
+-- =============================================================================
+--
+-- This file shows how to add revision tracking to your OWN tables.
+-- Do NOT run this as-is — adapt to your schema.
+--
+-- =============================================================================
+
+-- Example: Adding rev tracking to an existing resource table
+--
+--   ALTER TABLE your_resource_table
+--       ADD COLUMN IF NOT EXISTS rev INTEGER NOT NULL DEFAULT 1,
+--       ADD COLUMN IF NOT EXISTS last_request_id UUID;
+--
+-- Example: Trigger to auto-increment rev on update
+--
+--   CREATE OR REPLACE FUNCTION increment_rev()
+--   RETURNS TRIGGER AS $$
+--   BEGIN
+--       NEW.rev := OLD.rev + 1;
+--       NEW.updated_at := now();
+--       RETURN NEW;
+--   END;
+--   $$ LANGUAGE plpgsql;
+--
+--   CREATE TRIGGER trg_increment_rev
+--       BEFORE UPDATE ON your_resource_table
+--       FOR EACH ROW
+--       EXECUTE FUNCTION increment_rev();
+--
+-- Example: Optimistic concurrency check in application code (pseudocode)
+--
+--   UPDATE your_resource_table
+--   SET    field = $value, rev = rev + 1
+--   WHERE  id = $resourceId
+--   AND    rev = $expectedRev;
+--
+--   -- If rows_affected = 0 → conflict (409)
+--   -- If rows_affected = 1 → success
+
+SELECT 'NOTE: 003_example_rev_columns.sql is a reference file. Adapt to your own schema.' AS info;

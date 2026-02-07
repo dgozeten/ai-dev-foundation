@@ -6,7 +6,13 @@
 # This script applies the ai-dev-foundation to any existing git repository.
 #
 # Usage:
-#   /path/to/ai-dev-foundation/foundation/scripts/init.sh
+#   /path/to/ai-dev-foundation/foundation/scripts/init.sh [OPTIONS]
+#
+# Options:
+#   (none)       Apply rules, docs only. No database changes.
+#   --with-db    Also copy migration files to migrations/foundation/
+#   --run        Used with --with-db. Copy AND execute migrations.
+#                Requires $DATABASE_URL and psql. Asks for confirmation.
 #
 # Must be run from the ROOT of the target git repository.
 #
@@ -15,6 +21,7 @@
 #   - Copies foundation files (rules, dev-memory, state-protocol)
 #   - Will NOT overwrite existing files
 #   - Commits applied files to git
+#   - Database changes are OPT-IN only
 #
 # =============================================================================
 
@@ -25,6 +32,31 @@ set -e
 # ---------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FOUNDATION_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# ---------------------------------------------------------------------------
+# Parse arguments
+# ---------------------------------------------------------------------------
+WITH_DB=false
+RUN_MIGRATIONS=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --with-db) WITH_DB=true ;;
+        --run)     RUN_MIGRATIONS=true ;;
+        *)
+            echo "ERROR: Unknown argument: $arg"
+            echo "Usage: init.sh [--with-db [--run]]"
+            exit 1
+            ;;
+    esac
+done
+
+# --run requires --with-db
+if [ "$RUN_MIGRATIONS" = true ] && [ "$WITH_DB" = false ]; then
+    echo "ERROR: --run requires --with-db"
+    echo "Usage: init.sh --with-db --run"
+    exit 1
+fi
 
 # ---------------------------------------------------------------------------
 # 1. Verify we are in a git repository root
@@ -65,7 +97,7 @@ mkdir -p docs/state-protocol
 echo ""
 
 # ---------------------------------------------------------------------------
-# 3. Copy files
+# 3. Copy foundation files
 # ---------------------------------------------------------------------------
 echo "Copying foundation files..."
 
@@ -88,11 +120,83 @@ done
 echo ""
 
 # ---------------------------------------------------------------------------
+# 4. Database migrations (opt-in)
+# ---------------------------------------------------------------------------
+if [ "$WITH_DB" = true ]; then
+    echo "Copying database migrations..."
+    mkdir -p migrations/foundation
+
+    for file in "$FOUNDATION_DIR/templates/full-bootstrap/migrations"/*.sql; do
+        filename="$(basename "$file")"
+        safe_copy "$file" "migrations/foundation/$filename"
+    done
+
+    safe_copy "$FOUNDATION_DIR/templates/full-bootstrap/verify.sql" "migrations/foundation/verify.sql"
+
+    echo ""
+
+    # Run migrations if --run is specified
+    if [ "$RUN_MIGRATIONS" = true ]; then
+        # Validate DATABASE_URL
+        if [ -z "$DATABASE_URL" ]; then
+            echo "ERROR: DATABASE_URL is not set."
+            echo "       Export DATABASE_URL before using --run."
+            exit 1
+        fi
+
+        # Validate psql is available
+        if ! command -v psql >/dev/null 2>&1; then
+            echo "ERROR: psql is not installed or not in PATH."
+            exit 1
+        fi
+
+        # Explicit confirmation — Decision Gate principle
+        echo "========================================"
+        echo "WARNING: You are about to run migrations"
+        echo "against: $DATABASE_URL"
+        echo "========================================"
+        echo ""
+        printf "Type 'yes' to confirm: "
+        read -r confirm
+
+        if [ "$confirm" != "yes" ]; then
+            echo "Aborted. Migration files were copied but NOT executed."
+        else
+            echo ""
+            echo "Running migrations..."
+
+            for file in migrations/foundation/0*.sql; do
+                echo "  EXEC: $file"
+                psql "$DATABASE_URL" -f "$file"
+            done
+
+            echo ""
+            echo "Running verification..."
+            psql "$DATABASE_URL" -f migrations/foundation/verify.sql
+
+            echo ""
+            echo "=== Database migrations applied successfully. ==="
+        fi
+    else
+        echo "Migration files copied. Review them, then run manually:"
+        echo "  psql \$DATABASE_URL -f migrations/foundation/001_dev_memory.sql"
+        echo "  psql \$DATABASE_URL -f migrations/foundation/002_state_protocol.sql"
+    fi
+
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # 5. Git integration
 # ---------------------------------------------------------------------------
 echo "Staging and committing..."
 
 git add .gemini/ RULES.md docs/dev-memory/ docs/state-protocol/ 2>/dev/null || true
+
+# Also stage migrations if they were copied
+if [ "$WITH_DB" = true ]; then
+    git add migrations/foundation/ 2>/dev/null || true
+fi
 
 # Only commit if there are staged changes
 if git diff --cached --quiet; then
