@@ -1,10 +1,10 @@
-# ai-dev-foundation
+# ai-dev-foundation — Free Edition
 
 The default starting point for serious AI-assisted software projects.
 
 > *This foundation does not make AI smarter. It makes software development safer.*
 
-**Version:** v1.0.0 · **Status:** Stable foundation
+**Version:** v1.0.0 · **Status:** Stable foundation · **Tier:** 🟢 Free
 
 ---
 
@@ -109,7 +109,9 @@ AI must not implement every improvement it detects. Detected ideas go to a **dec
 
 ## 🔒 Pro — Runnable Infrastructure
 
-The free foundation gives you **rules and documentation.** The Pro tier gives you the **infrastructure that enforces them automatically.**
+This repo contains the **free edition** — rules, documentation, and safety checklists.
+
+The **Pro tier** adds the runnable infrastructure that enforces those rules automatically: a live server, database-backed invariants, and AI integration that checks rules before every code mutation.
 
 | Feature | Free | Pro |
 |---|---|---|
@@ -124,6 +126,16 @@ The free foundation gives you **rules and documentation.** The Pro tier gives yo
 | `GET /invariants/check` endpoint | — | ✅ |
 | Implementation Checklist template | — | ✅ |
 | Fire-and-forget log script | — | ✅ |
+
+### How to Get Pro
+
+1. Go to **[github.com/sponsors/dgozeten](https://github.com/sponsors/dgozeten)**
+2. Select the **$29 one-time** tier
+3. Complete payment via GitHub (Stripe)
+4. You will receive an invite to the **private `ai-dev-foundation-pro` repo** within 24 hours
+5. Clone the pro repo and follow the setup instructions inside
+
+> **Why Pro?** The free rules tell AI what to do. Pro makes sure it actually does it — with a live API server that the AI queries before every mutation. If you're building something serious, the rules alone are not enough.
 
 **[⭐ Become a Sponsor → Get Pro](https://github.com/sponsors/dgozeten)**
 
