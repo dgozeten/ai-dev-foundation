@@ -71,15 +71,31 @@ The same applies to State Protocol logging: mutation success is sacred. Logging 
 
 ## The Flow
 
+```mermaid
+flowchart LR
+    A["🧑 Human"] -->|request| B["🚧 Decision Gate"]
+    B -->|plan + risks| A
+    A -->|approve| C["🤖 AI Executes"]
+    C -->|mutation| D["🔒 State Protocol"]
+    D -->|safe write| E["🗄️ Database"]
+    D -.->|fire-and-forget| F["📝 Dev Memory"]
+
+    style A fill:#1a1a2e,color:#e0e0e0,stroke:#7c3aed
+    style B fill:#1a1a2e,color:#e0e0e0,stroke:#f59e0b
+    style C fill:#1a1a2e,color:#e0e0e0,stroke:#3b82f6
+    style D fill:#1a1a2e,color:#e0e0e0,stroke:#10b981
+    style E fill:#1a1a2e,color:#e0e0e0,stroke:#10b981
+    style F fill:#1a1a2e,color:#e0e0e0,stroke:#6b7280
 ```
-1. Human makes a request
-2. AI produces a Decision Gate analysis
-3. Human approves, rejects, or modifies
-4. AI executes the approved mutation
-5. State Protocol ensures the mutation is safe (idempotent, conflict-aware)
-6. Dev Memory records what happened and why (fire-and-forget)
-7. The record survives the session
-```
+
+| Step | What Happens |
+|---|---|
+| **Human → Decision Gate** | Human makes a request. AI produces analysis — not code. |
+| **Decision Gate → Human** | Plan, risks, and alternatives are presented for review. |
+| **Human → AI Executes** | Human approves. Only then does AI act. |
+| **AI → State Protocol** | Mutation is checked for idempotency and conflicts. |
+| **State Protocol → Database** | Safe write with `rev` increment. |
+| **State Protocol → Dev Memory** | Fire-and-forget log. Never blocks the mutation. |
 
 Every step is explicit. Nothing is assumed. Nothing is silent.
 

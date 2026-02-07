@@ -2,6 +2,8 @@
 
 The default starting point for serious AI-assisted software projects.
 
+> *This foundation does not make AI smarter. It makes software development safer.*
+
 **Version:** v1.0.0 · **Status:** Stable foundation
 
 ---
