@@ -27,7 +27,9 @@ This foundation solves that by making critical behavior **persistent and enforce
 | AI forgets past decisions | **Dev Memory** persists development context in a database |
 | AI acts without permission | **Decision Gate** requires explicit human approval before any mutation |
 | AI silently overwrites state | **State Protocol** enforces revision tracking and conflict detection |
+| AI deletes working code | **Code Preservation** invariant — never remove existing code without approval |
 | Rules exist only in chat | **Repository rules** survive session resets, contributor changes, and AI swaps |
+| AI hallucinates file paths | **Hallucination Guard** requires proof (grep/search) or labeled assumptions |
 | Mutations are untraceable | Every change is logged with context — who, what, why |
 
 ## What This Is NOT
@@ -44,14 +46,17 @@ This foundation solves that by making critical behavior **persistent and enforce
 
 ### Decision Gate
 
-Before the AI writes any code, it must produce:
+Before the AI writes any code, it must produce — in order:
 
 1. Task Summary
-2. Scope Decision
-3. Impact Analysis
-4. Risk Analysis
-5. Alternatives
-6. Explicit approval request
+2. Scope Decision (frontend / backend / fullstack)
+3. Blast Radius (files, DB, integrations, rollback)
+4. Source of Truth Check
+5. Tests & Verification
+6. Secrets & Safety
+7. Safe Defaults
+8. Proof / Assumptions
+9. Approval Request
 
 No step may be skipped. The AI waits for human approval before proceeding. This is enforced via `RULES.md`, not conversation memory.
 
@@ -60,10 +65,10 @@ No step may be skipped. The AI waits for human approval before proceeding. This 
 A database-backed system that records:
 
 - What development tasks were performed
-- What AI interactions occurred
+- What AI interactions occurred (prompts and responses)
 - What changes were made and why
 
-Dev Memory is **not** a production audit log. It exists for development-time traceability — so that "why was this written this way?" has an answer even after the chat is gone.
+Includes a **runnable Fastify server** (`--with-server`) and **Antigravity-native integration** (`--antigravity`) for automatic prompt/response logging.
 
 ### State Protocol
 
@@ -74,6 +79,31 @@ A framework-agnostic standard for safe state mutations:
 - **Optimistic concurrency** via `expectedRev` — stale writes are rejected, not silently merged
 
 "Last write wins" is not acceptable. State Protocol makes conflicts explicit.
+
+### Code Preservation
+
+AI must never delete, rename, or refactor existing working code unless explicitly approved. This rule is enforced at two levels:
+- **File-based:** `RULES.md` Section F
+- **Database-backed:** `foundation_invariants` table — survives even if rules are not loaded
+
+### Safety Hardening v1
+
+Six mandatory safety checks added to every implementation:
+
+| Rule | What It Prevents |
+|---|---|
+| **Blast Radius Analysis** | Uncontrolled changes spreading across the codebase |
+| **Source of Truth** | UI managing shared state without backend persistence |
+| **Minimum Test Bar** | Shipping changes with zero verification |
+| **Secrets Hygiene** | Committing tokens, logging keys, exposing dev endpoints |
+| **Safe Defaults** | Breaking existing behavior with new features |
+| **Hallucination Guard** | AI inventing file paths, routes, or columns that don't exist |
+
+Full details: [docs/SAFETY.md](./docs/SAFETY.md) · Checklist: [docs/CHANGE_CHECKLIST.md](./docs/CHANGE_CHECKLIST.md)
+
+### Backlog Discipline
+
+AI must not implement every improvement it detects. Detected ideas go to a **decision buffer** (`BACKLOG.md`) and require explicit human approval before implementation.
 
 ---
 
@@ -162,19 +192,28 @@ Use this when the project **matters** — when decisions need to survive, when A
 ai-dev-foundation/
 ├── README.md
 ├── README-TR.md
-├── .gitignore
+├── LICENSE
+├── docs/
+│   ├── OVERVIEW.md                            # Mental model + flow diagram
+│   ├── SAFETY.md                              # Safety Hardening v1 rules
+│   └── CHANGE_CHECKLIST.md                    # Mandatory implementation checklist
 └── foundation/
     ├── foundation.config.json
     ├── rules/
     │   ├── RULES.md                           # Pointer file
     │   └── .gemini/
-    │       └── RULES.md                       # Source of truth for AI behavior
+    │       └── RULES.md                       # Source of truth (A-H sections)
     ├── scripts/
-    │   └── init.sh                            # One-command bootstrap
+    │   ├── init.sh                            # One-command bootstrap
+    │   └── log-interaction.sh                 # Fire-and-forget Dev Memory logger
     ├── templates/
-    │   ├── dev-memory-backend/                # Schema + API contract
+    │   ├── BACKLOG.md                         # Decision buffer template
+    │   ├── IMPLEMENTATION_CHECKLIST.md        # Reusable checklist template
+    │   ├── dev-memory-backend/                # Schema + API contract + logging guide
+    │   ├── dev-memory-server/                 # Runnable Fastify + pg server
     │   ├── state-protocol/                    # Primitives + patterns
-    │   └── full-bootstrap/                    # Opt-in DB migrations
+    │   ├── full-bootstrap/                    # Opt-in DB migrations + invariants
+    │   └── integrations/antigravity/          # Antigravity-native workflow + rules
     └── patches/
 ```
 
