@@ -92,7 +92,7 @@ Six mandatory safety checks added to every implementation:
 
 | Rule | What It Prevents |
 |---|---|
-| **Blast Radius Analysis** | Uncontrolled changes spreading across the codebase |
+| **Blast Radius Analysis** | Uncontrolled changes — high-impact if: >5 files, DB migration, critical module, or API contract change |
 | **Source of Truth** | UI managing shared state without backend persistence |
 | **Minimum Test Bar** | Shipping changes with zero verification |
 | **Secrets Hygiene** | Committing tokens, logging keys, exposing dev endpoints |
