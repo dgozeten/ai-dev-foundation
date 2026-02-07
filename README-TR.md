@@ -71,4 +71,4 @@ Bu tek komutla:
 
 ## Lisans
 
-Özel — yalnızca dahili kullanım.
+MIT Lisansı — detaylar için [LICENSE](./LICENSE) dosyasına bakın.

@@ -161,4 +161,4 @@ ai-dev-foundation/
 
 ## License
 
-Private — internal use only.
+MIT License — see [LICENSE](./LICENSE).
