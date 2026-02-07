@@ -15,6 +15,8 @@ foundation/rules/.gemini/RULES.md
 That file is the ONLY valid source for AI behavior rules.
 This file is a pointer — not a replacement.
 
+**Includes:** Decision Gate, Code Preservation, Safety Hardening v1 (blast radius, source of truth, test bar, secrets hygiene, safe defaults, hallucination guard).
+
 ---
 
 ## For Contributors

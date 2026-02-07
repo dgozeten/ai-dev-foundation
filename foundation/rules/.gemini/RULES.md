@@ -104,3 +104,102 @@ If the AI detects that existing code should be improved, it MUST:
 **Violation of this rule is a critical failure.** Code preservation is an invariant — it cannot be overridden by any other rule, instruction, or context.
 
 This invariant is also persisted in the `foundation_invariants` database table. Even if this file is not loaded, the invariant survives.
+
+---
+
+## G) Safety Hardening v1 — MANDATORY
+
+These rules extend the Decision Gate with structural safety checks. Every rule in this section is mandatory and non-negotiable.
+
+### G.1) Blast Radius Analysis
+
+Before implementing any change, the AI MUST provide:
+
+| Check | Required |
+|---|---|
+| Affected modules/files | List every file that will be created, modified, or deleted |
+| DB/migration impact | Yes or No. If yes, list tables and columns affected |
+| External integrations impact | Yes or No. If yes, list APIs, webhooks, or services affected |
+| Rollback plan | 1-2 concrete steps to undo the change if it fails |
+
+If the blast radius exceeds 5 files or touches database schema, the AI MUST flag this as **high-impact** and require explicit acknowledgment.
+
+### G.2) Source of Truth Rule
+
+- UI MUST NOT be the source of truth for shared or multi-user state.
+- If a UI change affects state that is read by other users, services, or sessions, there MUST be backend + database persistence.
+- State Protocol primitives (`requestId`, `rev`, `expectedRev`) MUST be used for any shared state mutation.
+- If the AI proposes a UI-only state change for shared data, it MUST be flagged as a violation and corrected.
+
+### G.3) Minimum Test Bar
+
+For every change the AI proposes, it MUST include at least ONE of the following:
+
+| Test Type | Example |
+|---|---|
+| **Smoke test command** | `curl -s http://localhost:3100/health` |
+| **curl verification** | `curl -X POST ... \| jq .ok` |
+| **Unit test plan** | "Add test for `calculateRevision()` covering conflict case" |
+| **Migration verify query** | `SELECT count(*) FROM foundation_invariants;` |
+
+The AI MUST explicitly label which test type is included. Omitting all four is a gate failure.
+
+### G.4) Secrets & Config Hygiene
+
+- **Never commit secrets or real tokens.** Not in code, not in comments, not in documentation.
+- **Example secrets must be clearly marked.** Use `your-secret-here`, `REPLACE_ME`, or `<placeholder>`. Never use real-looking values.
+- **Never log tokens.** If logging is unavoidable, mask all but the last 4 characters.
+- **Dev-only endpoints** must require ALL of the following:
+  - Environment flag (`NODE_ENV !== 'production'`)
+  - Secret header (`X-Dev-Token`)
+  - Non-production guard (refuse to execute if production is detected)
+
+### G.5) Safe Defaults
+
+Any new capability introduced by the AI MUST be:
+
+- **Feature-flagged or opt-in.** Default behavior must remain unchanged.
+- **Backward compatible.** Existing consumers must not break.
+- **Default no-op.** If the feature is not explicitly enabled, it does nothing.
+- **Documented deprecation.** If renaming or replacing an endpoint/function, the old name must continue to work with a deprecation notice.
+
+### G.6) Hallucination Guard
+
+If the AI references a file, route, table, column, or function that may not exist, the AI MUST:
+
+1. **Provide proof** — grep output, search result, or line reference from the actual codebase
+2. **OR label it as an assumption** — and STOP, asking for human confirmation before proceeding
+
+The AI MUST NOT:
+- Invent file paths that have not been verified
+- Reference database columns without confirming the schema
+- Assume an endpoint exists without checking the router
+- Cite line numbers without viewing the file
+
+If caught hallucinating, this is a critical failure equivalent to a Decision Gate violation.
+
+---
+
+## H) Decision Gate Response Format — EXTENDED
+
+Every implementation response MUST include these sections, in order:
+
+```
+1. Task Summary
+2. Scope Decision         (frontend / backend / fullstack + 1 sentence why)
+3. Blast Radius           (files, DB, integrations, rollback plan)
+4. Source of Truth Check   (is shared state persisted correctly?)
+5. Tests & Verification   (at least one: smoke / curl / unit / migration)
+6. Secrets & Safety        (any secrets, tokens, or sensitive config?)
+7. Safe Defaults           (feature-flagged? backward compatible? default no-op?)
+8. Proof / Assumptions     (grep results or explicit assumption labels)
+9. Next Step               (requires explicit human approval)
+```
+
+If risk is non-trivial (DB changes, external API calls, multi-file refactors), the AI MUST add:
+
+```
+⚠ HIGH-RISK FLAG: [reason]
+```
+
+The human MUST explicitly acknowledge the high-risk flag before the AI proceeds.
