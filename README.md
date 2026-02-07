@@ -68,7 +68,7 @@ A database-backed system that records:
 - What AI interactions occurred (prompts and responses)
 - What changes were made and why
 
-Includes a **runnable Fastify server** (`--with-server`) and **Antigravity-native integration** (`--antigravity`) for automatic prompt/response logging.
+Dev Memory schema and API contract are included free. **[Pro]** includes a runnable Fastify server and Antigravity-native integration for automatic logging.
 
 ### State Protocol
 
@@ -83,8 +83,8 @@ A framework-agnostic standard for safe state mutations:
 ### Code Preservation
 
 AI must never delete, rename, or refactor existing working code unless explicitly approved. This rule is enforced at two levels:
-- **File-based:** `RULES.md` Section F
-- **Database-backed:** `foundation_invariants` table — survives even if rules are not loaded
+- **File-based:** `RULES.md` Section F (included)
+- **Database-backed:** `foundation_invariants` table **[Pro]** — survives even if rules are not loaded
 
 ### Safety Hardening v1
 
@@ -104,6 +104,28 @@ Full details: [docs/SAFETY.md](./docs/SAFETY.md) · Checklist: [docs/CHANGE_CHEC
 ### Backlog Discipline
 
 AI must not implement every improvement it detects. Detected ideas go to a **decision buffer** (`BACKLOG.md`) and require explicit human approval before implementation.
+
+---
+
+## 🔒 Pro — Runnable Infrastructure
+
+The free foundation gives you **rules and documentation.** The Pro tier gives you the **infrastructure that enforces them automatically.**
+
+| Feature | Free | Pro |
+|---|---|---|
+| Decision Gate rules | ✅ | ✅ |
+| Safety Hardening docs | ✅ | ✅ |
+| Code Preservation rule | ✅ | ✅ |
+| Backlog Discipline template | ✅ | ✅ |
+| Change Checklist | ✅ | ✅ |
+| Dev Memory Server (Fastify + pg) | — | ✅ |
+| Antigravity integration | — | ✅ |
+| Database-backed invariants | — | ✅ |
+| `GET /invariants/check` endpoint | — | ✅ |
+| Implementation Checklist template | — | ✅ |
+| Fire-and-forget log script | — | ✅ |
+
+**[⭐ Become a Sponsor → Get Pro](https://github.com/sponsors/dgozeten)**
 
 ---
 
@@ -132,34 +154,8 @@ This copies rules and documentation only. No database, no server, no dependencie
 | `init.sh` | Rules + docs only |
 | `init.sh --with-db` | + Copy migration SQL files (review before running) |
 | `init.sh --with-db --run` | + Execute migrations immediately (`$DATABASE_URL` + `psql` required) |
-| `init.sh --with-server --with-db` | + Runnable Dev Memory API server + migrations |
-| `init.sh --with-server --with-db --antigravity` | **Full stack**: server + DB + automatic prompt logging |
 
-### 4. Full setup (zero to running)
-
-If you want everything — Dev Memory API, database schema, and Antigravity integration:
-
-```bash
-# Apply foundation with all options
-bash /path/to/ai-dev-foundation/foundation/scripts/init.sh \
-  --with-server --with-db --antigravity
-
-# Start the Dev Memory server
-cd dev-memory-server
-npm install
-cp .env.example .env          # edit DATABASE_URL
-npm run migrate               # create tables
-npm start                     # API runs on localhost:3100
-
-# Set the URL so Antigravity can log interactions
-export DEV_MEMORY_URL=http://localhost:3100
-```
-
-After this:
-- ✅ AI rules are enforced (Decision Gate active)
-- ✅ Dev Memory API is running and accepting logs
-- ✅ Antigravity automatically logs prompts and responses
-- ✅ All development decisions are persisted in PostgreSQL
+> **[Pro]** Sponsors get the runnable Dev Memory server, Antigravity integration, and database-backed invariants. [Become a Sponsor →](https://github.com/sponsors/dgozeten)
 
 ---
 
@@ -189,7 +185,7 @@ Use this when the project **matters** — when decisions need to survive, when A
 ## Project Structure
 
 ```
-ai-dev-foundation/
+ai-dev-foundation/                             # 🟢 FREE — Public
 ├── README.md
 ├── README-TR.md
 ├── LICENSE
@@ -204,17 +200,22 @@ ai-dev-foundation/
     │   └── .gemini/
     │       └── RULES.md                       # Source of truth (A-H sections)
     ├── scripts/
-    │   ├── init.sh                            # One-command bootstrap
-    │   └── log-interaction.sh                 # Fire-and-forget Dev Memory logger
+    │   └── init.sh                            # One-command bootstrap
     ├── templates/
     │   ├── BACKLOG.md                         # Decision buffer template
-    │   ├── IMPLEMENTATION_CHECKLIST.md        # Reusable checklist template
-    │   ├── dev-memory-backend/                # Schema + API contract + logging guide
-    │   ├── dev-memory-server/                 # Runnable Fastify + pg server
+    │   ├── dev-memory-backend/                # Schema + API contract
     │   ├── state-protocol/                    # Primitives + patterns
-    │   ├── full-bootstrap/                    # Opt-in DB migrations + invariants
-    │   └── integrations/antigravity/          # Antigravity-native workflow + rules
+    │   └── full-bootstrap/                    # Opt-in DB migrations
     └── patches/
+```
+
+```
+ai-dev-foundation-pro/                         # 🔒 PRO — Sponsors only
+├── dev-memory-server/                         # Runnable Fastify + pg server
+├── migrations/                                # Foundation invariants SQL
+├── integrations/antigravity/                  # Automatic logging workflow
+├── templates/                                 # Implementation checklist
+└── log-interaction.sh                         # Fire-and-forget logger
 ```
 
 ---
