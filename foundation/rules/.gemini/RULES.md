@@ -122,7 +122,20 @@ Before implementing any change, the AI MUST provide:
 | External integrations impact | Yes or No. If yes, list APIs, webhooks, or services affected |
 | Rollback plan | 1-2 concrete steps to undo the change if it fails |
 
-If the blast radius exceeds 5 files or touches database schema, the AI MUST flag this as **high-impact** and require explicit acknowledgment.
+#### High-Impact Definition
+
+A change is classified as **high-impact** if ANY of the following are true:
+
+| # | Trigger | Example |
+|---|---|---|
+| 1 | **More than 5 files changed** | Large refactors, cross-cutting concerns |
+| 2 | **Any DB migration or schema change** | ALTER TABLE, new columns, new tables, index changes |
+| 3 | **Touches critical modules** | Auth, payment, ledger, security, encryption, access control |
+| 4 | **Public API contract changes** | Request/response shape, endpoints, status codes, headers |
+
+If a change is high-impact, the AI MUST:
+- Flag it with `⚠ HIGH-IMPACT` and list which trigger(s) apply
+- Require explicit human acknowledgment before proceeding
 
 ### G.2) Source of Truth Rule
 
@@ -188,6 +201,8 @@ Every implementation response MUST include these sections, in order:
 1. Task Summary
 2. Scope Decision         (frontend / backend / fullstack + 1 sentence why)
 3. Blast Radius           (files, DB, integrations, rollback plan)
+   → High-Impact? yes / no
+   → Triggers: files>5 | DB migration | critical module | public API change
 4. Source of Truth Check   (is shared state persisted correctly?)
 5. Tests & Verification   (at least one: smoke / curl / unit / migration)
 6. Secrets & Safety        (any secrets, tokens, or sensitive config?)
@@ -196,10 +211,10 @@ Every implementation response MUST include these sections, in order:
 9. Next Step               (requires explicit human approval)
 ```
 
-If risk is non-trivial (DB changes, external API calls, multi-file refactors), the AI MUST add:
+If High-Impact is `yes`, the AI MUST add:
 
 ```
-⚠ HIGH-RISK FLAG: [reason]
+⚠ HIGH-IMPACT: [trigger 1, trigger 2, ...]
 ```
 
-The human MUST explicitly acknowledge the high-risk flag before the AI proceeds.
+The human MUST explicitly acknowledge the high-impact flag before the AI proceeds.

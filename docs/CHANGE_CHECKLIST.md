@@ -16,7 +16,11 @@ Copy this checklist into your response and fill in each item. An empty checklist
 - [ ] **External integrations affected:** Yes / No
   - If yes: (list APIs, webhooks, services)
 - [ ] **Rollback plan:** (1-2 steps to undo this change)
-- [ ] **High-impact flag:** (required if >5 files or DB changes)
+- [ ] **High-Impact?** Yes / No
+  - [ ] Trigger: files > 5
+  - [ ] Trigger: DB migration or schema change
+  - [ ] Trigger: critical module (auth, payment, ledger, security)
+  - [ ] Trigger: public API contract change
 
 ### 2. Source of Truth
 

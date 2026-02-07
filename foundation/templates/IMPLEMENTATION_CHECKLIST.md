@@ -18,6 +18,8 @@ Copy this template into every implementation proposal. Fill in every section bef
 - DB impact: [yes/no — if yes, list tables]
 - External integrations: [yes/no — if yes, list services]
 - Rollback: [1-2 steps]
+- High-Impact? [yes/no]
+  - Triggers: [files>5 | DB migration | critical module | public API change]
 
 ### Source of Truth Check
 - Shared state: [yes/no]
@@ -46,7 +48,8 @@ Copy this template into every implementation proposal. Fill in every section bef
 - [ ] Medium (logic changes, new endpoints)
 - [ ] High (DB schema, external APIs, multi-file refactors)
 
-⚠ HIGH-RISK FLAG: [reason, if applicable]
+If High-Impact is yes:
+⚠ HIGH-IMPACT: [trigger 1, trigger 2, ...]
 
 ### Next Step
 Awaiting human approval.
