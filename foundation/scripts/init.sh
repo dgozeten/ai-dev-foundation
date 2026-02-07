@@ -39,15 +39,17 @@ FOUNDATION_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 WITH_DB=false
 RUN_MIGRATIONS=false
 WITH_ANTIGRAVITY=false
+WITH_SERVER=false
 
 for arg in "$@"; do
     case "$arg" in
         --with-db)      WITH_DB=true ;;
         --run)          RUN_MIGRATIONS=true ;;
         --antigravity)  WITH_ANTIGRAVITY=true ;;
+        --with-server)  WITH_SERVER=true ;;
         *)
             echo "ERROR: Unknown argument: $arg"
-            echo "Usage: init.sh [--with-db [--run]] [--antigravity]"
+            echo "Usage: init.sh [--with-db [--run]] [--antigravity] [--with-server]"
             exit 1
             ;;
     esac
@@ -212,7 +214,40 @@ if [ "$WITH_ANTIGRAVITY" = true ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 6. Git integration
+# 6. Dev Memory server (opt-in)
+# ---------------------------------------------------------------------------
+if [ "$WITH_SERVER" = true ]; then
+    echo "Installing Dev Memory server..."
+    mkdir -p dev-memory-server
+
+    for file in "$FOUNDATION_DIR/templates/dev-memory-server"/*; do
+        filename="$(basename "$file")"
+        safe_copy "$file" "dev-memory-server/$filename"
+    done
+
+    safe_copy "$FOUNDATION_DIR/templates/dev-memory-server/.env.example" "dev-memory-server/.env.example"
+
+    # If --with-db is also set, copy migrations into the server directory
+    if [ "$WITH_DB" = true ]; then
+        mkdir -p dev-memory-server/migrations
+        for file in "$FOUNDATION_DIR/templates/full-bootstrap/migrations"/*.sql; do
+            filename="$(basename "$file")"
+            safe_copy "$file" "dev-memory-server/migrations/$filename"
+        done
+    fi
+
+    echo ""
+    echo "To start the Dev Memory server:"
+    echo "  cd dev-memory-server"
+    echo "  npm install"
+    echo "  cp .env.example .env   # edit with your DATABASE_URL"
+    echo "  npm run migrate        # create tables"
+    echo "  npm start              # start on port 3100"
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# 7. Git integration
 # ---------------------------------------------------------------------------
 echo "Staging and committing..."
 
@@ -226,6 +261,11 @@ fi
 # Also stage Antigravity files if they were copied
 if [ "$WITH_ANTIGRAVITY" = true ]; then
     git add .agent/workflows/ scripts/ 2>/dev/null || true
+fi
+
+# Also stage server if it was copied
+if [ "$WITH_SERVER" = true ]; then
+    git add dev-memory-server/ 2>/dev/null || true
 fi
 
 # Only commit if there are staged changes

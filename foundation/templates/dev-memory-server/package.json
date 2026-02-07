@@ -1,0 +1,14 @@
+{
+    "name": "dev-memory-server",
+    "version": "1.0.0",
+    "description": "Minimal Dev Memory API server for ai-dev-foundation",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "migrate": "node -e \"require('./server.js').migrate()\""
+    },
+    "dependencies": {
+        "fastify": "^5.2.0",
+        "pg": "^8.13.0"
+    }
+}
