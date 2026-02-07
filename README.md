@@ -79,36 +79,57 @@ A framework-agnostic standard for safe state mutations:
 
 ## Quick Start
 
-### 1. Apply the foundation to any project
+### 1. Clone the foundation
 
 ```bash
 git clone https://github.com/dgozeten/ai-dev-foundation.git
-cd your-project
+```
+
+### 2. Apply to your project
+
+From **your project's root** (must be a git repo):
+
+```bash
 bash /path/to/ai-dev-foundation/foundation/scripts/init.sh
 ```
 
-This copies:
-- AI behavior rules → `.gemini/RULES.md` and `RULES.md`
-- Dev Memory documentation → `docs/dev-memory/`
-- State Protocol documentation → `docs/state-protocol/`
+This copies rules and documentation only. No database, no server, no dependencies.
 
-No database changes. No dependencies. No framework assumptions.
+### 3. Pick your level
 
-### 2. Optional: include database migrations
+| Command | What It Does |
+|---|---|
+| `init.sh` | Rules + docs only |
+| `init.sh --with-db` | + Copy migration SQL files (review before running) |
+| `init.sh --with-db --run` | + Execute migrations immediately (`$DATABASE_URL` + `psql` required) |
+| `init.sh --with-server --with-db` | + Runnable Dev Memory API server + migrations |
+| `init.sh --with-server --with-db --antigravity` | **Full stack**: server + DB + automatic prompt logging |
+
+### 4. Full setup (zero to running)
+
+If you want everything — Dev Memory API, database schema, and Antigravity integration:
 
 ```bash
-bash /path/to/ai-dev-foundation/foundation/scripts/init.sh --with-db
+# Apply foundation with all options
+bash /path/to/ai-dev-foundation/foundation/scripts/init.sh \
+  --with-server --with-db --antigravity
+
+# Start the Dev Memory server
+cd dev-memory-server
+npm install
+cp .env.example .env          # edit DATABASE_URL
+npm run migrate               # create tables
+npm start                     # API runs on localhost:3100
+
+# Set the URL so Antigravity can log interactions
+export DEV_MEMORY_URL=http://localhost:3100
 ```
 
-This copies migration files to `migrations/foundation/` in your project. **Nothing is executed.** You review them and run manually.
-
-### 3. Optional: copy and run migrations
-
-```bash
-bash /path/to/ai-dev-foundation/foundation/scripts/init.sh --with-db --run
-```
-
-Requires `$DATABASE_URL` and `psql`. Asks for explicit `"yes"` confirmation before executing.
+After this:
+- ✅ AI rules are enforced (Decision Gate active)
+- ✅ Dev Memory API is running and accepting logs
+- ✅ Antigravity automatically logs prompts and responses
+- ✅ All development decisions are persisted in PostgreSQL
 
 ---
 
