@@ -26,6 +26,20 @@ When operating in a project that has Dev Memory enabled:
 
 ---
 
+## Invariant Pre-Check Rule
+
+Before ANY code mutation (creating, editing, or deleting files), Antigravity MUST:
+
+1. Call `GET $DEV_MEMORY_URL/invariants/check`
+2. Read all returned invariants
+3. Verify that the planned mutation does NOT violate any invariant
+4. If a violation is detected → STOP and report the violation to the human
+5. If the API is unreachable → fall back to RULES.md invariants (Section F)
+
+This check is non-negotiable. The database is the final authority on active invariants.
+
+---
+
 ## Task Binding Rule
 
 When Antigravity starts a new session in a project with Dev Memory:

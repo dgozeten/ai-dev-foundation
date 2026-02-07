@@ -177,6 +177,33 @@ app.get("/dev-memory/tasks/:id/interactions", async (req, reply) => {
 });
 
 // =============================================================================
+// Routes — Foundation Invariants
+// =============================================================================
+
+// GET /invariants — List all active invariants
+app.get("/invariants", async (req, reply) => {
+  const result = await pool.query(
+    "SELECT * FROM foundation_invariants WHERE active = true ORDER BY id ASC"
+  );
+  return { ok: true, invariants: result.rows };
+});
+
+// GET /invariants/check — Pre-mutation check (returns all critical invariants AI must respect)
+app.get("/invariants/check", async (req, reply) => {
+  const result = await pool.query(
+    "SELECT id, title, description, category FROM foundation_invariants WHERE active = true AND severity = 'critical' ORDER BY id ASC"
+  );
+  return {
+    ok: true,
+    count: result.rows.length,
+    invariants: result.rows,
+    message: result.rows.length > 0
+      ? "You MUST respect ALL listed invariants before proceeding with any mutation."
+      : "No active invariants."
+  };
+});
+
+// =============================================================================
 // Health check
 // =============================================================================
 

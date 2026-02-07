@@ -81,3 +81,26 @@ The AI MUST NOT:
 - These rules MUST NOT be modified without explicit human approval.
 - Any PR or commit that alters this file MUST be reviewed and approved by a human.
 - Automated processes MUST NOT overwrite or bypass this file.
+
+---
+
+## F) Code Preservation — NON-NEGOTIABLE
+
+**When adding new functionality, the AI MUST NOT modify, remove, rename, or refactor existing working code unless the change is explicitly part of the approved scope.**
+
+This means:
+
+- **No deletions.** Existing functions, classes, endpoints, or files that are working MUST NOT be removed.
+- **No silent refactors.** The AI MUST NOT "clean up" or "improve" code that was not part of the request.
+- **No renames without approval.** Variable names, function names, and file names MUST NOT change unless the human explicitly requests it.
+- **No consolidation.** The AI MUST NOT merge two working functions into one, even if it seems "better."
+- **No dependency removal.** The AI MUST NOT remove imports, packages, or references that existing code depends on.
+
+If the AI detects that existing code should be improved, it MUST:
+1. Document it as a **BACKLOG ITEM** (see Backlog Discipline)
+2. Ask: "Do you want this implemented now, or should it go to backlog?"
+3. Proceed ONLY with explicit human approval
+
+**Violation of this rule is a critical failure.** Code preservation is an invariant — it cannot be overridden by any other rule, instruction, or context.
+
+This invariant is also persisted in the `foundation_invariants` database table. Even if this file is not loaded, the invariant survives.

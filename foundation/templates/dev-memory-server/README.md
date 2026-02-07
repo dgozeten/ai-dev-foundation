@@ -42,6 +42,8 @@ Server runs on `http://localhost:3100` by default.
 | `PATCH` | `/dev-memory/tasks/:id` | Update task metadata |
 | `POST` | `/dev-memory/tasks/:id/interactions` | Log a prompt/response |
 | `GET` | `/dev-memory/tasks/:id/interactions` | List interactions for a task |
+| `GET` | `/invariants` | List all active invariants |
+| `GET` | `/invariants/check` | Pre-mutation check (critical invariants only) |
 | `GET` | `/health` | Health check |
 
 ---
