@@ -38,14 +38,16 @@ FOUNDATION_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # ---------------------------------------------------------------------------
 WITH_DB=false
 RUN_MIGRATIONS=false
+WITH_ANTIGRAVITY=false
 
 for arg in "$@"; do
     case "$arg" in
-        --with-db) WITH_DB=true ;;
-        --run)     RUN_MIGRATIONS=true ;;
+        --with-db)      WITH_DB=true ;;
+        --run)          RUN_MIGRATIONS=true ;;
+        --antigravity)  WITH_ANTIGRAVITY=true ;;
         *)
             echo "ERROR: Unknown argument: $arg"
-            echo "Usage: init.sh [--with-db [--run]]"
+            echo "Usage: init.sh [--with-db [--run]] [--antigravity]"
             exit 1
             ;;
     esac
@@ -187,7 +189,30 @@ if [ "$WITH_DB" = true ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 5. Git integration
+# 5. Antigravity integration (opt-in)
+# ---------------------------------------------------------------------------
+if [ "$WITH_ANTIGRAVITY" = true ]; then
+    echo "Installing Antigravity integration..."
+
+    # Workflow
+    mkdir -p .agent/workflows
+    safe_copy "$FOUNDATION_DIR/templates/integrations/antigravity/dev-memory-log.md" ".agent/workflows/dev-memory-log.md"
+
+    # Antigravity-specific rules (append to .gemini/)
+    safe_copy "$FOUNDATION_DIR/templates/integrations/antigravity/antigravity-rules.md" ".gemini/antigravity-rules.md"
+
+    # Log script
+    mkdir -p scripts
+    safe_copy "$FOUNDATION_DIR/../scripts/log-interaction.sh" "scripts/log-interaction.sh"
+    if [ -f "scripts/log-interaction.sh" ]; then
+        chmod +x scripts/log-interaction.sh
+    fi
+
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# 6. Git integration
 # ---------------------------------------------------------------------------
 echo "Staging and committing..."
 
@@ -196,6 +221,11 @@ git add .gemini/ RULES.md docs/dev-memory/ docs/state-protocol/ 2>/dev/null || t
 # Also stage migrations if they were copied
 if [ "$WITH_DB" = true ]; then
     git add migrations/foundation/ 2>/dev/null || true
+fi
+
+# Also stage Antigravity files if they were copied
+if [ "$WITH_ANTIGRAVITY" = true ]; then
+    git add .agent/workflows/ scripts/ 2>/dev/null || true
 fi
 
 # Only commit if there are staged changes
